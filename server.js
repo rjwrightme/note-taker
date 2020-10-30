@@ -11,6 +11,9 @@ var PORT = 8080;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// Configure Express to serve static files
+app.use(express.static('public'));
+
 // Routes
 // =============================================================
 app.get("/notes", function(req, res) {
@@ -27,17 +30,19 @@ app.get("/api/notes", function(req, res) {
     });
 });
 app.post("/api/notes", function(req, res) {
-    res.sendFile(path.join(__dirname, "public/notes.html"));
+    console.log(req.data);
+    res = true;
 });
-app.delete("/api/notes/:id", function(req, res) {
-    res.sendFile(path.join(__dirname, "public/notes.html"));
-});
+// app.delete("/api/notes/:id", function(req, res) {
+//     res.sendFile(path.join(__dirname, "public/notes.html"));
+// });
 
+// Default Route
 app.get("*", function(req, res) {
     res.sendFile(path.join(__dirname, "public/index.html"));
 });
 
-// Starts the server to begin listening
+// Start the server to begin listening
 // =============================================================
 app.listen(PORT, function() {
   console.log("App listening on PORT " + PORT);
