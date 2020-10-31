@@ -18,29 +18,30 @@ app.use(express.static('public'));
 
 // Routes
 // =============================================================
-app.get("/notes", function(req, res) {
+app.get("/notes", (req, res) => {
     res.sendFile(path.join(__dirname, "public/notes.html"));
 });
 
 // API Routes
-app.get("/api/notes", function(req, res) {
+app.get("/api/notes", (req, res) => {
     fs.readFile(path.join(__dirname, "db/db.json"), "utf-8", (err, data) => {
         if(err) {
             throw err;
         }
-        res.send(data);
+        res.send(JSON.parse(data));
     });
 });
-app.post("/api/notes", function(req, res) {
+app.post("/api/notes", (req, res) => {
     // Read in JSON DB to see what the last note ID is
     const db = JSON.parse(fs.readFileSync(path.join(__dirname, "db/db.json"), 'utf8'));
-    
-    // Assign the ID of the previous note
-    lastNoteId = db[db.length -1].id;
 
-    // If there was no previous note or ID, assign an ID of 0.
+    // If lastNoteId is unassigned, try to assign it the number of the last note ID, otherwise start over on 0.
     if (isNaN(lastNoteId)) {
-        lastNoteId = 0;
+        if (db.length > 0) {
+            lastNoteId = db[db.length -1].id;
+        } else {
+            lastNoteId = 0;
+        }
     }
 
     lastNoteId++;
@@ -53,14 +54,26 @@ app.post("/api/notes", function(req, res) {
     // Update the db JSON file with the new note
     fs.writeFile(path.join(__dirname, "db/db.json"), JSON.stringify(db), (err) => {
       if (err) throw err;
-      console.log(`The note ${req.body.title} was added to the db!`);
+      console.log(`The note ${req.body.title} was added to the db.`);
     });
     // Send the new note back to the client in the response
     res.send(req.body);
 });
-// app.delete("/api/notes/:id", function(req, res) {
-//     res.sendFile(path.join(__dirname, "public/notes.html"));
-// });
+app.delete("/api/notes/:id", (req, res) => {
+    const id = req.params.id;
+
+    // Read in JSON DB
+    const db = JSON.parse(fs.readFileSync(path.join(__dirname, "db/db.json"), 'utf8'));
+    const newDB = db.filter(note => note.id != id);
+
+    fs.writeFile(path.join(__dirname, "db/db.json"), JSON.stringify(newDB), (err) => {
+      if (err) throw err;
+      console.log(`The note with the ID of ${id} was removed from the db.`);
+      res.status(200).json({
+        message: 'deleted',
+      });
+    });
+});
 
 // Default Route
 app.get("*", function(req, res) {
