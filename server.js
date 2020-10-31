@@ -1,13 +1,13 @@
 const express = require("express");
 const fs = require("fs");
-var path = require("path");
+const path = require("path");
 
 let lastNoteId;
 
 // Set up the Express App
 // =============================================================
-var app = express();
-var PORT = 8080;
+const app = express();
+let PORT = process.env.PORT || 8080;
 
 // Set up the Express app to handle data parsing
 app.use(express.urlencoded({ extended: true }));
