@@ -33,10 +33,10 @@ app.get("/api/notes", function(req, res) {
 });
 app.post("/api/notes", function(req, res) {
     // Read in JSON DB to see what the last note ID is
-    const obj = JSON.parse(fs.readFileSync(path.join(__dirname, "db/db.json"), 'utf8'));
+    const db = JSON.parse(fs.readFileSync(path.join(__dirname, "db/db.json"), 'utf8'));
     
     // Assign the ID of the previous note
-    lastNoteId = obj[0].id;
+    lastNoteId = db[db.length -1].id;
 
     // If there was no previous note or ID, assign an ID of 0.
     if (isNaN(lastNoteId)) {
@@ -48,6 +48,14 @@ app.post("/api/notes", function(req, res) {
     // Add the new ID to new note object
     req.body.id = lastNoteId;
 
+    db.push(req.body);
+
+    // Update the db JSON file with the new note
+    fs.writeFile(path.join(__dirname, "db/db.json"), JSON.stringify(db), (err) => {
+      if (err) throw err;
+      console.log(`The note ${req.body.title} was added to the db!`);
+    });
+    // Send the new note back to the client in the response
     res.send(req.body);
 });
 // app.delete("/api/notes/:id", function(req, res) {
